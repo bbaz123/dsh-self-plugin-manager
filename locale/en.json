@@ -1,0 +1,4 @@
+{
+  "title": "Self-installed plugins",
+  "description": "Separates plugins this profile installed from the ones DSH ships, reports runtime health and compatibility, and offers update/rollback guarded by a DPIP pre-check."
+}

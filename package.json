@@ -1,0 +1,68 @@
+{
+  "name": "dsh-self-plugin-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH 自安装插件管理器：在 设置 → 插件 中新增「自安装插件」页签，给出本 profile 自行安装插件的权威归属、运行健康与宿主兼容信息，并提供经 DPIP 前置校验的更新与回滚。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "lib/",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "icon": "./icon.svg",
+  "meta": {
+    "title": "自安装插件",
+    "description": "区分本 profile 自行安装的插件与 DSH 自带插件，显示运行健康与兼容信息，并提供经 DPIP 前置校验的更新与回滚。"
+  },
+  "license": "Apache-2.0",
+  "author": "bbaz123",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "test:offline": "node --test \"test/scan.test.mjs\" \"test/health.test.mjs\" \"test/gate.test.mjs\" \"test/wire.test.mjs\"",
+    "check": "node --check lib/index.js && node --check lib/service.js && node --check lib/registry.js && node --check lib/scan.js && node --check lib/health.js && node --check lib/gate.js && node --check lib/update.js && node --check lib/wire.js && node --check lib/runtime.js && node --check lib/json-safe.js && node --check client.js && node --test \"test/*.test.mjs\"",
+    "verify": "node verify/wiring.mjs && node verify/activation.mjs && node verify/dispatch.mjs",
+    "verify:registry": "node verify/registry.mjs"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-typert-protocol": "^0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.2"
+  }
+}

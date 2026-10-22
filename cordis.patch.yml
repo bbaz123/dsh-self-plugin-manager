@@ -1,0 +1,71 @@
+# dsh-self-plugin-manager bundle patch.
+#
+# Mounts ONE host-plane row. The row publishes the Cordis service `selfPlugins`
+# and its Gateway namespace of the same name, so the Settings tab (and only it)
+# can read the profile's installed bundles and ask for an update or rollback.
+#
+#   * no `isolate` realm: the service is global, exactly like `pluginManager`
+#     itself, which this row depends on through `export const inject`.
+#   * the module declares its own `inject`, so the row needs none.
+#
+# Install:   plugin_manager install_bundle  (target = this package directory)
+# Uninstall: remove the bundle from the profile. The row, its service and its
+#            Gateway namespace go with it. Its own state file under
+#            `$DSH_HOME/self-plugin-manager/` is the only thing left behind.
+- insert:
+    - id: self-plugin-manager
+      # Node-resolvable package name — must stay in sync with package.json `name`.
+      name: 'dsh-self-plugin-manager'
+      config:
+        # ── write path ──────────────────────────────────────────────────────
+        # WARNING, read before changing: a Gateway call does NOT pass through
+        # the tool pipeline. @deepseek-ai/dsh-operation-security contributes
+        # only `tools/pre-execute` + `ctx.tools.guard`, and its detector has no
+        # rule for `plugin_manager`; the plugin manager's own service has no
+        # security hook either. The shipped Web Plugins page already calls
+        # `remote.pluginManager.*` directly for the same reason.
+        #
+        # So this plugin's update/rollback buttons are an additional write entry
+        # point, and the ONLY thing guarding them is `lib/gate.js`, which
+        # mirrors the security layer's DPIP verdict (BLOCKED / QUARANTINED /
+        # ROLLBACK_REQUIRED refused; an unreadable state document refused
+        # outright; a plugin with no completed DPIP run requires the user's
+        # explicit acknowledgement in the dialog).
+        #
+        # That is a pre-check, NOT an approval: it cannot run the DPIP pipeline
+        # and must never be described as if it had. Set this to false to keep
+        # the whole read-only view and disable both write actions.
+        writesEnabled: true
+
+        # ── local placement ─────────────────────────────────────────────────
+        # '' -> $DSH_HOME/operation-security/plugin-state.json  (the shipped
+        #       security layer's own document; read only, never written here)
+        gateStateDir: ''
+        # '' -> $DSH_HOME/self-plugin-manager/rollback.json     (this plugin's
+        #       own rollback points; the plugin manager keeps no such record)
+        storageDir: ''
+
+        # ── post-change verification session ────────────────────────────────
+        # OFF by default, deliberately: this creates a Session and prompts an
+        # Agent on your behalf, which is an action taken without a click in that
+        # session. Turn it on only if you want an automatic verification run
+        # after every version change that actually took effect.
+        #
+        # A change reporting `restart-required` never triggers it: the new
+        # JavaScript generation is not loaded, so a fresh session would verify
+        # the old code and could report a misleading PASS.
+        autoVerify: false
+
+        # Route for that verification session. BOTH must be set to be used;
+        # otherwise the deployment's default model is used instead.
+        #
+        # There is intentionally no "cheapest model" setting. DeepSeek Harness
+        # 0.2.0-rc.2 exposes NO token pricing: ModelCatalogModel carries only
+        # id/name/description/reasoning, and LlmModelInfo / LlmResolvedModelInfo
+        # add only context, output cap, modalities and reasoning. The `llm`
+        # service's only pricing accessor, imageRequestPricing(), prices images.
+        # A cost ranking therefore cannot be computed from the shipped API, and
+        # this plugin does not guess one from model names — name the exact cheap
+        # route here if that is what you want.
+        verifyModelProvider: ''
+        verifyModel: ''

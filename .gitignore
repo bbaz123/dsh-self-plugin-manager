@@ -1,0 +1,7 @@
+# Dev-time junction farm to the DSH installation; never committed and never
+# shipped (the profile resolves @deepseek-ai/* from its own hoisted links).
+node_modules/
+
+# Local scratch: spike transcripts, probes, generated artifacts.
+.tmp/
+*.log
